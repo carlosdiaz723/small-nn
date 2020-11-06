@@ -83,39 +83,42 @@ class NeuralNet:
             return 1 / (1 + np.exp(-s))
 
 
-nn = NeuralNet()
+def main():
+    nn = NeuralNet()
+    xPredict = np.array(([1, 0, 1, 0, 1]), dtype=int)
+
+    # clear the loss file
+    with open("lossPerEpoch.csv", "w") as lossFile:
+        lossFile.seek(0)
+        lossFile.truncate()
+
+    if trace:
+        print("Input: \n" + str(x))
+        print("Expected Output: \n" + str(y) + '\n\n')
+
+    # each epoch runs inside this loop
+    for i in range(trainingEpochs):
+        print("Epoch # " + str(i))
+        if trace:
+            print("\nActual Output: \n" + str(nn.feedforward(x)))
+        # calculate loss
+        loss = np.mean(np.square(y - nn.feedforward(x)))
+        # save loss into file
+        with open("lossPerEpoch.csv", "a") as lossFile:
+            lossFile.write(str(i)+","+str(loss.tolist())+'\n')
+
+        if trace:
+            print("Loss: " + str(loss) + '\n')
+        # train with updated weights
+        nn.train(x, y)
+        if trace:
+            print("Predicted output data based on trained weights: ")
+            print("Expected (x1, x2, x3, x4, and Bias): \n" + str(xPredict))
+        print("Output (y1): \n" + str(nn.feedforward(xPredict)) + '\n\n')
+
+
+# choose number of epochs
 trainingEpochs = 100
 # optionally print more information about each epoch
 trace = False
-
-xPredict = np.array(([1, 0, 1, 0, 1]), dtype=int)
-
-# clear the loss file
-with open("lossPerEpoch.csv", "w") as lossFile:
-    lossFile.seek(0)
-    lossFile.truncate()
-
-
-if trace:
-    print("Input: \n" + str(x))
-    print("Expected Output: \n" + str(y) + '\n\n')
-
-# each epoch runs inside this loop
-for i in range(trainingEpochs):
-    print("Epoch # " + str(i))
-    if trace:
-        print("\nActual Output: \n" + str(nn.feedforward(x)))
-    # calculate loss
-    loss = np.mean(np.square(y - nn.feedforward(x)))
-    # save loss into file
-    with open("lossPerEpoch.csv", "a") as lossFile:
-        lossFile.write(str(i)+","+str(loss.tolist())+'\n')
-
-    if trace:
-        print("Loss: " + str(loss) + '\n')
-    # train with updated weights
-    nn.train(x, y)
-    if trace:
-        print("Predicted output data based on trained weights: ")
-        print("Expected (x1, x2, x3, x4, and Bias): \n" + str(xPredict))
-    print("Output (y1): \n" + str(nn.feedforward(xPredict)) + '\n\n')
+main()
