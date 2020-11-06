@@ -1,5 +1,7 @@
+from matplotlib.pyplot import xlabel, ylabel
 import numpy as np
-
+import matplotlib.pyplot as plt
+from numpy.core.defchararray import title
 '''
 all 16 possible examples of a 2x2 grid of white or black pixels
    black=0, white=1
@@ -92,14 +94,15 @@ def main():
         lossFile.seek(0)
         lossFile.truncate()
 
-    if trace:
+    if veryVerbose:
         print("Input: \n" + str(x))
         print("Expected Output: \n" + str(y) + '\n\n')
 
     # each epoch runs inside this loop
     for i in range(trainingEpochs):
-        print("Epoch # " + str(i))
-        if trace:
+        if verbose:
+            print("Epoch # " + str(i))
+        if veryVerbose:
             print("\nActual Output: \n" + str(nn.feedforward(x)))
         # calculate loss
         loss = np.mean(np.square(y - nn.feedforward(x)))
@@ -107,18 +110,37 @@ def main():
         with open("lossPerEpoch.csv", "a") as lossFile:
             lossFile.write(str(i)+","+str(loss.tolist())+'\n')
 
-        if trace:
+        if veryVerbose:
             print("Loss: " + str(loss) + '\n')
         # train with updated weights
         nn.train(x, y)
-        if trace:
+        if veryVerbose:
             print("Predicted output data based on trained weights: ")
             print("Expected (x1, x2, x3, x4, and Bias): \n" + str(xPredict))
-        print("Output (y1): \n" + str(nn.feedforward(xPredict)) + '\n\n')
+        if verbose:
+            print("Output (y1): " + str(nn.feedforward(xPredict)) + '\n')
+
+
+def draw():
+    _, ax = plt.subplots()
+    lossListWithIndeces = list()
+    with open("lossPerEpoch.csv", "r") as lossFile:
+        lossListWithIndeces = lossFile.readlines()
+    lossList = list()
+    for loss in lossListWithIndeces:
+        lossList.append(float(loss[loss.index(',') + 1:loss.index('\n')]))
+    losses = np.array(lossList)
+    ax.plot(range(trainingEpochs), losses)
+    ax.set(xlabel='Number of Epochs Passed',
+           ylabel='Loss', title='Loss over Time')
+    plt.show()
 
 
 # choose number of epochs
-trainingEpochs = 100
-# optionally print more information about each epoch
-trace = False
+trainingEpochs = 300
+# optionally print even more information about each epoch?
+veryVerbose = False
+# print the guess at each epoch?
+verbose = False or veryVerbose
 main()
+draw()
