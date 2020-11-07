@@ -14,6 +14,7 @@ x = np.array(([0, 0, 0, 0, 1],
               [0, 1, 0, 0, 1],
               [0, 0, 1, 0, 1],
               [0, 0, 0, 1, 1],
+              # --------------
               [1, 1, 0, 0, 1],
               [1, 0, 1, 0, 1],
               [1, 0, 0, 1, 1],
@@ -27,22 +28,9 @@ x = np.array(([0, 0, 0, 0, 1],
               [1, 1, 1, 1, 1]), dtype=float)
 
 # the corresponding "correct" answer to the above examples
-y = np.array(([0],
-              [0],
-              [0],
-              [0],
-              [0],
-              [1],
-              [1],
-              [1],
-              [1],
-              [1],
-              [1],
-              [1],
-              [1],
-              [1],
-              [1],
-              [1]), dtype=float)
+y = np.array(([0], [0], [0], [0], [0],
+              [1], [1], [1], [1], [1], [1], [1], [1], [1], [1], [1]),
+             dtype=float)
 
 
 class NeuralNet:
@@ -90,8 +78,9 @@ def main(verbose=False, veryVerbose=False):
     if veryVerbose:
         verbose = True
     nn = NeuralNet()
-    xPredict = np.array(([topLeft.get(), topRight.get(),
-                          bottomLeft.get(), bottomRight.get(), 1]), dtype=int)
+    # the input layer is the unchecked boxes and a bias neuron
+    xPredict = np.array(([tl.get(), tr.get(), bl.get(), br.get(), 1]),
+                        dtype=int)
     # clear the loss file
     with open("lossPerEpoch.csv", "w") as lossFile:
         lossFile.seek(0)
@@ -142,21 +131,21 @@ def draw(trainingEpochs):
     plt.show()
 
 
+# ----------------- GUI Set-up ------------------------
 master = tk.Tk()
 master.title('Neural Network Setup')
 master.option_add('*Font', 'Times 14')
-topLeft, topRight, bottomLeft, bottomRight = \
-    tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar()
+tl, tr, bl, br = tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar()
 pixelRequest = 'Please select the pixels that should be black: '
 tk.Label(master, text=pixelRequest).grid(row=0, column=0)
-tl = tk.Checkbutton(master, variable=topLeft, onvalue=0, offvalue=1)
-tr = tk.Checkbutton(master, variable=topRight, onvalue=0, offvalue=1)
-bl = tk.Checkbutton(master, variable=bottomLeft, onvalue=0, offvalue=1)
-br = tk.Checkbutton(master, variable=bottomRight, onvalue=0, offvalue=1)
-tl.grid(row=0, column=1)
-tr.grid(row=0, column=2)
-bl.grid(row=1, column=1)
-br.grid(row=1, column=2)
+tk.Checkbutton(master, variable=tl, onvalue=0,
+               offvalue=1).grid(row=0, column=1)
+tk.Checkbutton(master, variable=tr, onvalue=0,
+               offvalue=1).grid(row=0, column=2)
+tk.Checkbutton(master, variable=bl, onvalue=0,
+               offvalue=1).grid(row=1, column=1)
+tk.Checkbutton(master, variable=br, onvalue=0,
+               offvalue=1).grid(row=1, column=2)
 tk.Label(master, text='Number of training epochs: ').grid(row=3, column=0)
 numberOfEpochsField = tk.Entry(master, width=5)
 numberOfEpochsField.insert(0, '250')
@@ -168,3 +157,4 @@ resultLabel.grid(row=5, column=1)
 submitButton = tk.Button(master, text='Submit', command=main)
 submitButton.grid(row=4, column=0)
 tk.mainloop()
+# -----------------------------------------------------
