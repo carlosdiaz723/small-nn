@@ -1,7 +1,7 @@
-from matplotlib.pyplot import xlabel, ylabel
+from tkinter import BitmapImage
 import numpy as np
 import matplotlib.pyplot as plt
-from numpy.core.defchararray import title
+import tkinter as tk
 '''
 all 16 possible examples of a 2x2 grid of white or black pixels
    black=0, white=1
@@ -85,19 +85,23 @@ class NeuralNet:
             return 1 / (1 + np.exp(-s))
 
 
-def main():
+def main(verbose=False, veryVerbose=False):
+    trainingEpochs = int(numberOfEpochsField.get())
+    if veryVerbose:
+        verbose = True
     nn = NeuralNet()
-    xPredict = np.array(([1, 0, 1, 0, 1]), dtype=int)
-
+    xPredict = np.array(([topLeft.get(), topRight.get(),
+                          bottomLeft.get(), bottomRight.get(), 1]), dtype=int)
     # clear the loss file
     with open("lossPerEpoch.csv", "w") as lossFile:
         lossFile.seek(0)
         lossFile.truncate()
-
     if veryVerbose:
         print("Input: \n" + str(x))
         print("Expected Output: \n" + str(y) + '\n\n')
 
+    # keep track of best guess
+    bestGuess = None
     # each epoch runs inside this loop
     for i in range(trainingEpochs):
         if verbose:
@@ -109,19 +113,21 @@ def main():
         # save loss into file
         with open("lossPerEpoch.csv", "a") as lossFile:
             lossFile.write(str(i)+","+str(loss.tolist())+'\n')
-
         if veryVerbose:
             print("Loss: " + str(loss) + '\n')
         # train with updated weights
         nn.train(x, y)
+        bestGuess = nn.feedforward(xPredict)
         if veryVerbose:
             print("Predicted output data based on trained weights: ")
             print("Expected (x1, x2, x3, x4, and Bias): \n" + str(xPredict))
         if verbose:
-            print("Output (y1): " + str(nn.feedforward(xPredict)) + '\n')
+            print("Output (y1): " + str(bestGuess) + '\n')
+    resultLabel.config(text=bestGuess)
+    draw(trainingEpochs)
 
 
-def draw():
+def draw(trainingEpochs):
     _, ax = plt.subplots()
     lossListWithIndeces = list()
     with open("lossPerEpoch.csv", "r") as lossFile:
@@ -136,11 +142,29 @@ def draw():
     plt.show()
 
 
-# choose number of epochs
-trainingEpochs = 300
-# optionally print even more information about each epoch?
-veryVerbose = False
-# print the guess at each epoch?
-verbose = False or veryVerbose
-main()
-draw()
+master = tk.Tk()
+master.title('Neural Network Setup')
+master.option_add('*Font', 'Times 14')
+topLeft, topRight, bottomLeft, bottomRight = \
+    tk.IntVar(), tk.IntVar(), tk.IntVar(), tk.IntVar()
+pixelRequest = 'Please select the pixels that should be black: '
+tk.Label(master, text=pixelRequest).grid(row=0, column=0)
+tl = tk.Checkbutton(master, variable=topLeft, onvalue=0, offvalue=1)
+tr = tk.Checkbutton(master, variable=topRight, onvalue=0, offvalue=1)
+bl = tk.Checkbutton(master, variable=bottomLeft, onvalue=0, offvalue=1)
+br = tk.Checkbutton(master, variable=bottomRight, onvalue=0, offvalue=1)
+tl.grid(row=0, column=1)
+tr.grid(row=0, column=2)
+bl.grid(row=1, column=1)
+br.grid(row=1, column=2)
+tk.Label(master, text='Number of training epochs: ').grid(row=3, column=0)
+numberOfEpochsField = tk.Entry(master, width=5)
+numberOfEpochsField.insert(0, '250')
+numberOfEpochsField.grid(row=3, column=1)
+tk.Label(master, text='Guess: ').grid(row=5, column=0)
+tk.Label(master, text='(0 = Dark, 1 = Bright)').grid(row=6, column=0)
+resultLabel = tk.Label(master)
+resultLabel.grid(row=5, column=1)
+submitButton = tk.Button(master, text='Submit', command=main)
+submitButton.grid(row=4, column=0)
+tk.mainloop()
